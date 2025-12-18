@@ -49,6 +49,21 @@ EXPOSE 9000
 CMD ["php-fpm"]
 
 # ============================================
+# Node build stage
+# ============================================
+FROM node:20-alpine AS node-builder
+
+WORKDIR /var/www
+
+COPY package.json package-lock.json ./
+RUN npm ci
+
+COPY resources ./resources
+COPY vite.config.ts tsconfig.json tailwind.config.js postcss.config.js ./
+
+RUN npm run build
+
+# ============================================
 # Production stage
 # ============================================
 FROM base AS production
@@ -61,6 +76,9 @@ RUN composer install --no-dev --optimize-autoloader --no-interaction --no-script
 
 # Copy application files
 COPY --chown=www:www . /var/www
+
+# Copy built frontend assets from node stage
+COPY --from=node-builder --chown=www:www /var/www/public/build /var/www/public/build
 
 # Run composer scripts
 RUN composer dump-autoload --optimize

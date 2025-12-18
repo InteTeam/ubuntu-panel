@@ -21,16 +21,15 @@ cd upanel
 ```bash
 cp .env.production.example .env
 
-# Generate app key
-docker compose -f docker-compose.prod.yml run --rm app php artisan key:generate
-
-# Generate secure passwords
+# Generate secure passwords and app key
 DB_PASS=$(openssl rand -base64 32)
 REDIS_PASS=$(openssl rand -base64 32)
+APP_KEY="base64:$(openssl rand -base64 32)"
 
 # Update .env
 sed -i "s/^DB_PASSWORD=.*/DB_PASSWORD=$DB_PASS/" .env
 sed -i "s/^REDIS_PASSWORD=.*/REDIS_PASSWORD=$REDIS_PASS/" .env
+sed -i "s/^APP_KEY=.*/APP_KEY=$APP_KEY/" .env
 
 # Set your domain
 sed -i "s/^DOMAIN_NAME=.*/DOMAIN_NAME=upanel.yourdomain.com/" .env
@@ -40,7 +39,18 @@ sed -i "s|^APP_URL=.*|APP_URL=https://upanel.yourdomain.com|" .env
 nano .env
 ```
 
-### 3. Build & Start
+### 3. Prepare Storage
+
+```bash
+# Create required directories
+mkdir -p storage/logs storage/framework/{cache,sessions,views} storage/app/public
+
+# Fix permissions (container runs as uid 1000)
+chmod -R 775 storage bootstrap/cache
+chown -R 1000:1000 storage bootstrap/cache
+```
+
+### 4. Build & Start
 
 ```bash
 # Build production images
@@ -56,13 +66,13 @@ docker compose -f docker-compose.prod.yml exec app php artisan migrate --force
 docker compose -f docker-compose.prod.yml exec app php artisan storage:link
 ```
 
-### 4. Create Admin User
+### 5. Create Admin User
 
 Visit `https://your-domain.com/setup` to create your admin account.
 
 **SSL is automatic** - Caddy will provision a Let's Encrypt certificate on first request.
 
-### 5. Add Managed Servers
+### 6. Add Managed Servers
 
 1. Go to **Servers → Add Server** in UPanel
 2. Enter server details (name, IP, SSH port)
@@ -100,6 +110,9 @@ docker compose -f docker-compose.prod.yml logs -f
 
 # View Caddy/SSL logs
 docker compose -f docker-compose.prod.yml logs caddy
+
+# View app logs
+docker compose -f docker-compose.prod.yml exec app tail -f storage/logs/laravel-$(date +%Y-%m-%d).log
 
 # Restart services
 docker compose -f docker-compose.prod.yml restart
@@ -174,46 +187,61 @@ gunzip -c upanel_20240101.sql.gz | docker compose -f docker-compose.prod.yml exe
 tar -czf storage_$(date +%Y%m%d).tar.gz storage/
 ```
 
-## Disable Direct IP Access
-
-After confirming domain works, optionally block direct IP access at firewall level:
-
-```bash
-# Only allow 80/443 from Cloudflare IPs (if using Cloudflare)
-# Or configure your firewall to reject direct IP requests
-```
-
 ## Troubleshooting
 
+### Permission Issues
+
+If you see "Permission denied" errors:
+
+```bash
+# Fix storage permissions
+chmod -R 775 storage bootstrap/cache
+chown -R 1000:1000 storage bootstrap/cache
+```
+
 ### Check service status
+
 ```bash
 docker compose -f docker-compose.prod.yml ps
 ```
 
 ### View application logs
+
 ```bash
 docker compose -f docker-compose.prod.yml logs app
-docker compose -f docker-compose.prod.yml exec app tail -f storage/logs/laravel.log
+docker compose -f docker-compose.prod.yml exec app tail -f storage/logs/laravel-$(date +%Y-%m-%d).log
 ```
 
 ### Check queue worker
+
 ```bash
 docker compose -f docker-compose.prod.yml logs queue
 ```
 
 ### Database connection issues
+
 ```bash
 docker compose -f docker-compose.prod.yml exec app php artisan db:monitor
 ```
 
 ### Clear all caches
+
 ```bash
 docker compose -f docker-compose.prod.yml exec app php artisan optimize:clear
 ```
 
+### Regenerate APP_KEY (if needed)
+
+```bash
+# Generate manually and add to .env
+echo "APP_KEY=base64:$(openssl rand -base64 32)"
+# Copy output to .env
+nano .env
+```
+
 ## Security Checklist
 
-- [ ] Strong passwords for DB and Redis
+- [ ] Strong passwords for DB and Redis (auto-generated above)
 - [ ] DOMAIN_NAME configured (auto SSL)
 - [ ] APP_DEBUG=false
 - [ ] Firewall configured (only 80/443 open)
