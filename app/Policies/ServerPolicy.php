@@ -21,12 +21,12 @@ final class ServerPolicy
 
     public function create(User $user): bool
     {
-        return in_array($user->role, ['admin', 'operator'], true);
+        return in_array($user->role, ['admin', 'operator']);
     }
 
     public function update(User $user, Server $server): bool
     {
-        return in_array($user->role, ['admin', 'operator'], true);
+        return in_array($user->role, ['admin', 'operator']);
     }
 
     public function delete(User $user, Server $server): bool
@@ -34,8 +34,13 @@ final class ServerPolicy
         return $user->role === 'admin';
     }
 
-    public function manage(User $user, Server $server): bool
+    public function testConnection(User $user, Server $server): bool
     {
-        return in_array($user->role, ['admin', 'operator'], true);
+        return in_array($user->role, ['admin', 'operator']);
+    }
+
+    public function rotateToken(User $user, Server $server): bool
+    {
+        return $user->role === 'admin';
     }
 }

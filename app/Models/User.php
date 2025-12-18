@@ -23,6 +23,7 @@ final class User extends Authenticatable
         'recovery_codes',
         'role',
         'timezone',
+        'email_notifications',
     ];
 
     protected $hidden = [
@@ -38,6 +39,7 @@ final class User extends Authenticatable
             'two_factor_confirmed_at' => 'datetime',
             'recovery_codes' => 'encrypted:array',
             'password' => 'hashed',
+            'email_notifications' => 'boolean',
         ];
     }
 

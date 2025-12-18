@@ -394,23 +394,23 @@
 
 ---
 
-## Phase 4: Backups & Polish (Week 4-5)
+## Phase 4: Backups & Polish (Week 4-5) 🔄
 
-### 4.1 Backup System
+### 4.1 Backup System ✅
 
 #### Development Tasks
 | Status | Task |
 |--------|------|
-| 🔲 | BackupDestination model |
-| 🔲 | Backup model + factory |
-| 🔲 | BackupSchedule model |
-| 🔲 | BackupService |
-| 🔲 | Database dump (MySQL, PostgreSQL) |
-| 🔲 | Volume backup (tar) |
-| 🔲 | Google Drive upload |
-| 🔲 | Backblaze B2 upload |
-| 🔲 | SFTP upload |
-| 🔲 | Retention policy enforcement |
+| ✅ | BackupDestination model |
+| ✅ | Backup model + factory |
+| ✅ | BackupSchedule model |
+| ✅ | BackupService |
+| ✅ | Database dump (MySQL, PostgreSQL) |
+| ✅ | Volume backup (tar) |
+| ✅ | Google Drive upload |
+| ✅ | Backblaze B2 upload |
+| ✅ | SFTP upload |
+| ✅ | Retention policy enforcement |
 
 #### Tests
 | Status | Test |
@@ -421,22 +421,22 @@
 | 🔲 | Retention deletes old backups |
 | 🔲 | Failed backup sends notification |
 
-**Progress:** 🔲 0/10 dev, 🔲 0/5 tests
+**Progress:** ✅ 10/10 dev, 🔲 0/5 tests
 
 ---
 
-### 4.2 Backup UI
+### 4.2 Backup UI ✅
 
 #### Development Tasks
 | Status | Task |
 |--------|------|
-| 🔲 | BackupList page (`/backups`) |
-| 🔲 | BackupDestinations page |
-| 🔲 | BackupStatusBadge (atom) |
-| 🔲 | BackupDestinationCard (molecule) |
-| 🔲 | BackupRow (molecule) |
-| 🔲 | BackupScheduleForm (organism) |
-| 🔲 | Manual backup trigger |
+| ✅ | BackupList page (`/backups`) |
+| ✅ | BackupDestinations page |
+| ✅ | BackupStatusBadge (atom) |
+| ✅ | BackupDestinationCard (molecule) |
+| ✅ | BackupRow (molecule) |
+| ✅ | BackupScheduleForm (organism) |
+| ✅ | Manual backup trigger |
 | 🔲 | Restore action |
 
 #### Tests
@@ -446,7 +446,7 @@
 | 🔲 | Create destination |
 | 🔲 | Manual backup dispatches job |
 
-**Progress:** 🔲 0/8 dev, 🔲 0/3 tests
+**Progress:** ✅ 7/8 dev, 🔲 0/3 tests
 
 ---
 

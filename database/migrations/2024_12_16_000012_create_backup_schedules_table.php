@@ -13,10 +13,10 @@ return new class extends Migration
         Schema::create('backup_schedules', function (Blueprint $table) {
             $table->ulid('id')->primary();
             $table->foreignUlid('app_id')->constrained()->cascadeOnDelete();
-            $table->foreignUlid('backup_destination_id')->constrained()->cascadeOnDelete();
-            $table->enum('type', ['database', 'files', 'full']);
+            $table->foreignUlid('destination_id')->constrained('backup_destinations')->cascadeOnDelete();
+            $table->string('name', 100);
+            $table->enum('type', ['database', 'full'])->default('full');
             $table->string('cron_expression', 100);
-            $table->string('timezone', 50)->default('UTC');
             $table->unsignedInteger('retention_count')->default(7);
             $table->boolean('is_active')->default(true);
             $table->timestamp('last_run_at')->nullable();

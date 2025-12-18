@@ -19,6 +19,7 @@ return new class extends Migration
             $table->text('recovery_codes')->nullable();
             $table->enum('role', ['admin', 'operator', 'viewer'])->default('admin');
             $table->string('timezone', 50)->default('UTC');
+            $table->boolean('email_notifications')->default(true);
             $table->timestamps();
         });
     }

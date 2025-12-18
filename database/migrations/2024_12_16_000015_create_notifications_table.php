@@ -16,11 +16,9 @@ return new class extends Migration
             $table->string('type', 50);
             $table->string('title', 255);
             $table->text('message');
-            $table->string('notifiable_type', 50)->nullable();
-            $table->ulid('notifiable_id')->nullable();
+            $table->json('data')->nullable();
             $table->timestamp('read_at')->nullable();
-            $table->timestamp('email_sent_at')->nullable();
-            $table->timestamp('created_at')->useCurrent();
+            $table->timestamps();
 
             $table->index(['user_id', 'read_at']);
             $table->index('created_at');

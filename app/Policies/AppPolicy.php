@@ -21,12 +21,12 @@ final class AppPolicy
 
     public function create(User $user): bool
     {
-        return in_array($user->role, ['admin', 'operator'], true);
+        return in_array($user->role, ['admin', 'operator']);
     }
 
     public function update(User $user, App $app): bool
     {
-        return in_array($user->role, ['admin', 'operator'], true);
+        return in_array($user->role, ['admin', 'operator']);
     }
 
     public function delete(User $user, App $app): bool
@@ -36,6 +36,11 @@ final class AppPolicy
 
     public function deploy(User $user, App $app): bool
     {
-        return in_array($user->role, ['admin', 'operator'], true);
+        return in_array($user->role, ['admin', 'operator']);
+    }
+
+    public function rollback(User $user, App $app): bool
+    {
+        return in_array($user->role, ['admin', 'operator']);
     }
 }

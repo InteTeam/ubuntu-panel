@@ -4,7 +4,7 @@ import {
     LayoutDashboard,
     Server,
     AppWindow,
-    Database,
+    Archive,
     Shield,
     Settings,
     Bell,
@@ -42,7 +42,7 @@ export default function Navigation() {
         {
             name: 'Backups',
             href: '/backups',
-            icon: <Database className="h-5 w-5" />,
+            icon: <Archive className="h-5 w-5" />,
             active: url.startsWith('/backups'),
         },
         {

@@ -22,6 +22,7 @@ final class UserFactory extends Factory
             'password' => 'password',
             'role' => 'admin',
             'timezone' => 'UTC',
+            'email_notifications' => true,
         ];
     }
 
@@ -62,5 +63,10 @@ final class UserFactory extends Factory
                 'code8-code8',
             ],
         ]);
+    }
+
+    public function twoFactorConfirmed(): static
+    {
+        return $this->twoFactorEnabled();
     }
 }

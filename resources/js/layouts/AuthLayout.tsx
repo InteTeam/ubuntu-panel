@@ -4,6 +4,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import Navigation from '@/components/Organisms/Navigation';
 import UserDropdown from '@/components/Organisms/UserDropdown';
+import { NotificationBell } from '@/components/Organisms/NotificationBell';
 import FlashMessage from '@/components/Molecules/FlashMessage';
 import { Button } from '@/components/ui/button';
 import { Menu, X } from 'lucide-react';
@@ -83,6 +84,7 @@ export default function AuthLayout({ children, title = 'UPanel' }: AuthLayoutPro
 
                         <div className="flex-1" />
 
+                        <NotificationBell />
                         <UserDropdown />
                     </header>
 
