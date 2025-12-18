@@ -1,0 +1,75 @@
+{
+    "name": "inteteam/upanel",
+    "type": "project",
+    "description": "Security-first Ubuntu server control panel",
+    "keywords": ["laravel", "framework", "server", "management"],
+    "license": "proprietary",
+    "require": {
+        "php": "^8.3",
+        "bacon/bacon-qr-code": "^3.0",
+        "inertiajs/inertia-laravel": "^2.0",
+        "laravel/framework": "^12.0",
+        "laravel/horizon": "^5.29",
+        "laravel/sanctum": "^4.0",
+        "laravel/tinker": "^2.10",
+        "phpseclib/phpseclib": "^3.0",
+        "pragmarx/google2fa-laravel": "^2.2",
+        "tightenco/ziggy": "^2.4"
+    },
+    "require-dev": {
+        "fakerphp/faker": "^1.24",
+        "larastan/larastan": "^3.0",
+        "laravel/pint": "^1.18",
+        "laravel/sail": "^1.38",
+        "mockery/mockery": "^1.6",
+        "nunomaduro/collision": "^8.5",
+        "pestphp/pest": "^3.7",
+        "pestphp/pest-plugin-laravel": "^3.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/",
+            "Database\\Factories\\": "database/factories/",
+            "Database\\Seeders\\": "database/seeders/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "post-autoload-dump": [
+            "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
+            "@php artisan package:discover --ansi"
+        ],
+        "post-update-cmd": [
+            "@php artisan vendor:publish --tag=laravel-assets --ansi --force"
+        ],
+        "post-root-package-install": [
+            "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
+        ],
+        "post-create-project-cmd": [
+            "@php artisan key:generate --ansi"
+        ],
+        "test": "pest",
+        "lint": "pint",
+        "analyse": "phpstan analyse"
+    },
+    "extra": {
+        "laravel": {
+            "dont-discover": []
+        }
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "preferred-install": "dist",
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true,
+            "php-http/discovery": true
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}

@@ -1,0 +1,14 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+
+parameters:
+    paths:
+        - app/
+    level: 9
+    ignoreErrors:
+        # Ignore Inertia Response return type issues
+        - '#Method .+ should return .+ but returns Inertia\\Response#'
+    excludePaths:
+        - app/Console/Kernel.php
+    checkMissingIterableValueType: false
+    checkGenericClassInNonGenericObjectType: false

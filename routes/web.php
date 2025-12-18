@@ -1,0 +1,74 @@
+<?php
+
+declare(strict_types=1);
+
+use App\Http\Controllers\AppController;
+use App\Http\Controllers\Auth\ForgotPasswordController;
+use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\ResetPasswordController;
+use App\Http\Controllers\Auth\SetupController;
+use App\Http\Controllers\Auth\TwoFactorChallengeController;
+use App\Http\Controllers\Auth\TwoFactorSetupController;
+use App\Http\Controllers\InstallController;
+use App\Http\Controllers\ServerController;
+use Illuminate\Support\Facades\Route;
+
+/*
+|--------------------------------------------------------------------------
+| Web Routes
+|--------------------------------------------------------------------------
+*/
+
+// Install script (public, returns bash)
+Route::get('/install/{token}', [InstallController::class, 'script']);
+
+// Setup wizard (first-time setup)
+Route::middleware('guest')->group(function () {
+    Route::get('/setup', [SetupController::class, 'show'])->name('setup');
+    Route::post('/setup', [SetupController::class, 'store']);
+    
+    Route::get('/login', [LoginController::class, 'show'])->name('login');
+    Route::post('/login', [LoginController::class, 'store']);
+
+    // Password reset
+    Route::get('/forgot-password', [ForgotPasswordController::class, 'show'])->name('password.request');
+    Route::post('/forgot-password', [ForgotPasswordController::class, 'store'])->name('password.email');
+    Route::get('/reset-password/{token}', [ResetPasswordController::class, 'show'])->name('password.reset');
+    Route::post('/reset-password', [ResetPasswordController::class, 'store'])->name('password.update');
+
+    // 2FA challenge (session-based, not fully authenticated)
+    Route::get('/two-factor/challenge', [TwoFactorChallengeController::class, 'show'])->name('two-factor.challenge');
+    Route::post('/two-factor/challenge', [TwoFactorChallengeController::class, 'store']);
+});
+
+// Logout (requires auth)
+Route::post('/logout', [LoginController::class, 'destroy'])
+    ->middleware('auth')
+    ->name('logout');
+
+// 2FA setup (auth required, but before 2FA enforcement)
+Route::middleware('auth')->prefix('two-factor')->name('two-factor.')->group(function () {
+    Route::get('/setup', [TwoFactorSetupController::class, 'show'])->name('setup');
+    Route::post('/confirm', [TwoFactorSetupController::class, 'confirm'])->name('confirm');
+});
+
+// Protected routes (require auth + 2FA)
+Route::middleware(['auth', 'two-factor'])->group(function () {
+    Route::get('/', function () {
+        return redirect()->route('dashboard');
+    });
+
+    Route::get('/dashboard', function () {
+        return inertia('Dashboard');
+    })->name('dashboard');
+
+    // Servers
+    Route::resource('servers', ServerController::class);
+    Route::post('/servers/{server}/test-connection', [ServerController::class, 'testConnection'])->name('servers.test-connection');
+    Route::post('/servers/{server}/rotate-token', [ServerController::class, 'rotateToken'])->name('servers.rotate-token');
+
+    // Apps
+    Route::resource('apps', AppController::class);
+    Route::post('/apps/{app}/deploy/{environment?}', [AppController::class, 'deploy'])->name('apps.deploy');
+    Route::post('/apps/{app}/rollback/{deployment}', [AppController::class, 'rollback'])->name('apps.rollback');
+});
