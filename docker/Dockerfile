@@ -1,4 +1,4 @@
-FROM php:8.3-fpm-alpine
+FROM php:8.3-fpm-alpine AS base
 
 # Install system dependencies
 RUN apk add --no-cache \
@@ -34,11 +34,40 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Create system user
 RUN addgroup -g 1000 www && adduser -u 1000 -G www -s /bin/sh -D www
 
-# Set working directory
 WORKDIR /var/www
 
-# Copy existing application
+# ============================================
+# Development stage
+# ============================================
+FROM base AS development
+
 COPY --chown=www:www . /var/www
+
+USER www
+
+EXPOSE 9000
+CMD ["php-fpm"]
+
+# ============================================
+# Production stage
+# ============================================
+FROM base AS production
+
+# Copy composer files first for layer caching
+COPY --chown=www:www composer.json composer.lock ./
+
+# Install dependencies (no dev)
+RUN composer install --no-dev --optimize-autoloader --no-interaction --no-scripts
+
+# Copy application files
+COPY --chown=www:www . /var/www
+
+# Run composer scripts
+RUN composer dump-autoload --optimize
+
+# Set permissions
+RUN chown -R www:www /var/www/storage /var/www/bootstrap/cache \
+    && chmod -R 775 /var/www/storage /var/www/bootstrap/cache
 
 USER www
 

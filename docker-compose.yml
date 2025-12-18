@@ -3,6 +3,7 @@ services:
     build:
       context: .
       dockerfile: docker/Dockerfile
+      target: development
     container_name: upanel-app
     restart: unless-stopped
     working_dir: /var/www
