@@ -11,7 +11,7 @@ services:
       - APP_DEBUG=false
     volumes:
       - ./storage:/var/www/storage
-      - ./.env:/var/www/.env:ro
+      - ./.env:/var/www/.env
     networks:
       - upanel
     depends_on:
@@ -82,7 +82,7 @@ services:
       - APP_DEBUG=false
     volumes:
       - ./storage:/var/www/storage
-      - ./.env:/var/www/.env:ro
+      - ./.env:/var/www/.env
     networks:
       - upanel
     depends_on:
@@ -104,7 +104,7 @@ services:
       - APP_DEBUG=false
     volumes:
       - ./storage:/var/www/storage
-      - ./.env:/var/www/.env:ro
+      - ./.env:/var/www/.env
     networks:
       - upanel
     depends_on:
