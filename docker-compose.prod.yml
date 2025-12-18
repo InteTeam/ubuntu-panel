@@ -18,7 +18,7 @@ services:
       postgres:
         condition: service_healthy
       redis:
-        condition: service_healthy
+        condition: service_started
 
   caddy:
     image: caddy:2-alpine
@@ -63,16 +63,11 @@ services:
     image: redis:alpine
     container_name: upanel-redis-prod
     restart: unless-stopped
-    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-redis}
     volumes:
       - redis_data:/data
     networks:
       - upanel
-    healthcheck:
-      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
   queue:
     build:
@@ -94,7 +89,7 @@ services:
       postgres:
         condition: service_healthy
       redis:
-        condition: service_healthy
+        condition: service_started
 
   scheduler:
     build:
