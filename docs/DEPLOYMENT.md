@@ -62,6 +62,25 @@ Visit `https://your-domain.com/setup` to create your admin account.
 
 **SSL is automatic** - Caddy will provision a Let's Encrypt certificate on first request.
 
+### 5. Add Managed Servers
+
+1. Go to **Servers → Add Server** in UPanel
+2. Enter server details (name, IP, SSH port)
+3. Copy the one-liner install command:
+
+```bash
+curl -sSL https://your-panel.com/install/{TOKEN} | sudo bash
+```
+
+4. Run it on your target Ubuntu server (as root)
+5. Server appears online in UPanel within seconds
+
+The install script automatically:
+- Creates `upanel` user with SSH key authentication
+- Installs Docker & Docker Compose
+- Sets up the UPanel agent
+- Registers and connects to your panel
+
 ## Services
 
 | Service | Container | Port |
