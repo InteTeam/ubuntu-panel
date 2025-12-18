@@ -129,12 +129,12 @@ export default function Create({ servers, gitCredentials }: Props) {
 
                                 <div className="space-y-2">
                                     <Label htmlFor="git_credentials_id">Git Credentials (optional)</Label>
-                                    <Select value={data.git_credentials_id} onValueChange={(v) => setData('git_credentials_id', v)}>
+                                    <Select value={data.git_credentials_id || '_none'} onValueChange={(v) => setData('git_credentials_id', v === '_none' ? '' : v)}>
                                         <SelectTrigger>
                                             <SelectValue placeholder="Public repository" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="">Public repository</SelectItem>
+                                            <SelectItem value="_none">Public repository</SelectItem>
                                             {gitCredentials.map((cred) => (
                                                 <SelectItem key={cred.id} value={cred.id}>
                                                     {cred.name} ({cred.type})
