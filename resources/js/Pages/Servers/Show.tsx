@@ -95,16 +95,32 @@ export default function Show({ server, installToken }: Props) {
                         <CardHeader>
                             <CardTitle className="text-yellow-600">Installation Required</CardTitle>
                             <CardDescription>
-                                Run this command on your server to complete the setup.
+                                Run this command on your server as root to install the UPanel agent.
                             </CardDescription>
                         </CardHeader>
-                        <CardContent>
-                            <InstallCommandBlock 
-                                command={`curl -sSL ${panelUrl}/install/${installToken} | sudo bash`} 
+                        <CardContent className="space-y-4">
+                            <InstallCommandBlock
+                                command={`curl -sSL ${panelUrl}/install/${installToken} | sudo bash`}
                             />
-                            <p className="text-xs text-gray-500 mt-2">
+                            <p className="text-xs text-gray-500">
                                 This link expires in 1 hour. Refresh the page to generate a new one.
                             </p>
+
+                            <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg p-4 text-sm">
+                                <h4 className="font-semibold text-blue-800 dark:text-blue-200 mb-2">What this script does:</h4>
+                                <ul className="list-disc list-inside space-y-1 text-blue-700 dark:text-blue-300">
+                                    <li>Creates a dedicated <code className="bg-blue-100 dark:bg-blue-900 px-1 rounded">upanel</code> user for SSH access</li>
+                                    <li>Installs Docker and Docker Compose (if not present)</li>
+                                    <li>Deploys the UPanel agent container</li>
+                                    <li>Registers this server with your panel</li>
+                                </ul>
+                                <h4 className="font-semibold text-blue-800 dark:text-blue-200 mt-3 mb-2">Safe for existing servers:</h4>
+                                <ul className="list-disc list-inside space-y-1 text-blue-700 dark:text-blue-300">
+                                    <li>Does NOT modify existing users or Docker containers</li>
+                                    <li>Does NOT touch your existing applications</li>
+                                    <li>Only requires Ubuntu 22.04 or 24.04 LTS</li>
+                                </ul>
+                            </div>
                         </CardContent>
                     </Card>
                 )}
