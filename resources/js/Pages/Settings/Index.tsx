@@ -1,4 +1,4 @@
-import { useForm } from '@inertiajs/react';
+import { useForm, Link } from '@inertiajs/react';
 import AuthLayout from '@/layouts/AuthLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { User, Lock } from 'lucide-react';
+import { User, Lock, Key, ChevronRight } from 'lucide-react';
 
 interface Props {
     user: {
@@ -186,6 +186,26 @@ export default function Index({ user }: Props) {
                                 {passwordForm.processing ? 'Updating...' : 'Update Password'}
                             </Button>
                         </form>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                            <Key className="h-5 w-5" />
+                            Git Credentials
+                        </CardTitle>
+                        <CardDescription>
+                            Manage credentials for private Git repositories
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <Link href="/settings/git-credentials">
+                            <Button variant="outline" className="w-full justify-between">
+                                Manage Git Credentials
+                                <ChevronRight className="h-4 w-4" />
+                            </Button>
+                        </Link>
                     </CardContent>
                 </Card>
             </div>

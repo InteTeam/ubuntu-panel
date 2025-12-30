@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Http\Controllers\AppController;
 use App\Http\Controllers\BackupController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\GitCredentialController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\SecurityController;
 use App\Http\Controllers\SettingsController;
@@ -105,4 +106,12 @@ Route::middleware(['auth', 'two-factor'])->group(function () {
     Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
     Route::put('/settings/profile', [SettingsController::class, 'updateProfile'])->name('settings.profile');
     Route::put('/settings/password', [SettingsController::class, 'updatePassword'])->name('settings.password');
+
+    // Git Credentials
+    Route::prefix('settings/git-credentials')->name('settings.git-credentials.')->group(function () {
+        Route::get('/', [GitCredentialController::class, 'index'])->name('index');
+        Route::get('/create', [GitCredentialController::class, 'create'])->name('create');
+        Route::post('/', [GitCredentialController::class, 'store'])->name('store');
+        Route::delete('/{gitCredential}', [GitCredentialController::class, 'destroy'])->name('destroy');
+    });
 });

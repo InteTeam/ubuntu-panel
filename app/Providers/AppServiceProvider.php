@@ -7,10 +7,12 @@ namespace App\Providers;
 use App\Models\App;
 use App\Models\Backup;
 use App\Models\BackupDestination;
+use App\Models\GitCredential;
 use App\Models\Server;
 use App\Policies\AppPolicy;
 use App\Policies\BackupDestinationPolicy;
 use App\Policies\BackupPolicy;
+use App\Policies\GitCredentialPolicy;
 use App\Policies\ServerPolicy;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
@@ -28,5 +30,6 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(App::class, AppPolicy::class);
         Gate::policy(Backup::class, BackupPolicy::class);
         Gate::policy(BackupDestination::class, BackupDestinationPolicy::class);
+        Gate::policy(GitCredential::class, GitCredentialPolicy::class);
     }
 }
