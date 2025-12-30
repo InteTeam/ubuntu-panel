@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Plus, Trash2, Eye, EyeOff } from 'lucide-react';
+import { PasswordGenerator } from '@/components/Molecules/PasswordGenerator';
 
 interface EnvEditorProps {
     value: Record<string, string>;
@@ -52,7 +53,7 @@ export function EnvEditor({ value, onChange, label }: EnvEditorProps) {
 
             <div className="space-y-2">
                 {entries.map(([key, val], index) => (
-                    <div key={index} className="flex gap-2">
+                    <div key={index} className="flex gap-2 items-center">
                         <Input
                             placeholder="KEY"
                             value={key}
@@ -65,6 +66,10 @@ export function EnvEditor({ value, onChange, label }: EnvEditorProps) {
                             value={val}
                             onChange={(e) => updateValue(key, e.target.value)}
                             className="font-mono text-sm flex-1"
+                        />
+                        <PasswordGenerator
+                            fieldName={key}
+                            onGenerate={(password) => updateValue(key, password)}
                         />
                         <Button
                             type="button"

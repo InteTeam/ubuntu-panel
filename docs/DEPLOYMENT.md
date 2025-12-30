@@ -239,12 +239,171 @@ echo "APP_KEY=base64:$(openssl rand -base64 32)"
 nano .env
 ```
 
+---
+
+## Running Behind Reverse Proxy
+
+Use this method when you have an existing reverse proxy (Nginx Proxy Manager, Traefik, Caddy, HAProxy) handling SSL for multiple services.
+
+### When to Use This Method
+
+| Scenario | Recommended Setup |
+|----------|------------------|
+| UPanel is the only web service | Use `docker-compose.prod.yml` (Caddy with auto-SSL) |
+| Multiple services behind one proxy | Use `docker-compose.proxy.yml` (this section) |
+| Using Nginx Proxy Manager | Use `docker-compose.proxy.yml` (this section) |
+| Need custom SSL certificates | Use `docker-compose.proxy.yml` (this section) |
+
+### 1. Configure Environment
+
+```bash
+cp .env.example .env
+
+# Generate secure passwords
+DB_PASS=$(openssl rand -base64 32)
+REDIS_PASS=$(openssl rand -base64 32)
+APP_KEY="base64:$(openssl rand -base64 32)"
+
+# Update .env with generated values
+sed -i "s/^DB_PASSWORD=.*/DB_PASSWORD=$DB_PASS/" .env
+sed -i "s/^REDIS_PASSWORD=.*/REDIS_PASSWORD=$REDIS_PASS/" .env
+sed -i "s/^APP_KEY=.*/APP_KEY=$APP_KEY/" .env
+
+# Configure for reverse proxy
+sed -i "s|^APP_URL=.*|APP_URL=https://panel.yourdomain.com|" .env
+sed -i "s/^PROXY_PORT=.*/PROXY_PORT=8080/" .env
+sed -i "s/^# TRUSTED_PROXIES=.*/TRUSTED_PROXIES=*/" .env
+
+# Edit remaining settings
+nano .env
+```
+
+**Key settings for reverse proxy mode:**
+
+```env
+# Your public URL (with https if proxy handles SSL)
+APP_URL=https://panel.yourdomain.com
+
+# Port UPanel listens on (your proxy forwards to this)
+PROXY_PORT=8080
+
+# Trust proxy headers (required for correct HTTPS detection)
+TRUSTED_PROXIES=*
+```
+
+### 2. Prepare Storage & Build
+
+```bash
+# Create required directories
+mkdir -p storage/logs storage/framework/{cache,sessions,views} storage/app/public
+chmod -R 775 storage bootstrap/cache
+chown -R 1000:1000 storage bootstrap/cache
+
+# Build and start
+docker compose -f docker-compose.proxy.yml build
+docker compose -f docker-compose.proxy.yml up -d
+
+# Run migrations
+docker compose -f docker-compose.proxy.yml exec app php artisan migrate --force
+docker compose -f docker-compose.proxy.yml exec app php artisan storage:link
+```
+
+### 3. Configure Nginx Proxy Manager
+
+1. Add a new **Proxy Host** in NPM:
+   - **Domain Names**: `panel.yourdomain.com`
+   - **Scheme**: `http`
+   - **Forward Hostname/IP**: Your server's IP or `localhost` (if on same machine)
+   - **Forward Port**: `8080` (or your `PROXY_PORT` value)
+
+2. **SSL Tab**:
+   - Request a new SSL Certificate (Let's Encrypt)
+   - Enable **Force SSL**
+   - Enable **HTTP/2 Support**
+
+3. **Advanced Tab** (optional but recommended):
+   ```nginx
+   proxy_set_header X-Real-IP $remote_addr;
+   proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+   proxy_set_header X-Forwarded-Proto $scheme;
+   proxy_set_header X-Forwarded-Host $host;
+   proxy_set_header X-Forwarded-Port $server_port;
+   ```
+
+### 4. Configure Traefik (Alternative)
+
+If using Traefik instead of NPM, add labels to `docker-compose.proxy.yml`:
+
+```yaml
+services:
+  nginx:
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.upanel.rule=Host(`panel.yourdomain.com`)"
+      - "traefik.http.routers.upanel.entrypoints=websecure"
+      - "traefik.http.routers.upanel.tls.certresolver=letsencrypt"
+      - "traefik.http.services.upanel.loadbalancer.server.port=80"
+    networks:
+      - upanel
+      - traefik  # Add Traefik's network
+```
+
+### 5. Verify Configuration
+
+```bash
+# Check that HTTPS is detected correctly
+docker compose -f docker-compose.proxy.yml exec app php artisan tinker --execute="echo request()->secure() ? 'HTTPS: OK' : 'HTTPS: FAILED';"
+
+# Check generated URLs use HTTPS
+docker compose -f docker-compose.proxy.yml exec app php artisan tinker --execute="echo url('/');"
+```
+
+### Reverse Proxy Commands
+
+```bash
+# View logs
+docker compose -f docker-compose.proxy.yml logs -f
+
+# Restart services
+docker compose -f docker-compose.proxy.yml restart
+
+# Stop services
+docker compose -f docker-compose.proxy.yml down
+
+# Run artisan commands
+docker compose -f docker-compose.proxy.yml exec app php artisan <command>
+```
+
+### Troubleshooting Reverse Proxy
+
+**URLs show HTTP instead of HTTPS:**
+```bash
+# Verify TRUSTED_PROXIES is set
+grep TRUSTED_PROXIES .env
+
+# Should output: TRUSTED_PROXIES=* (or specific IPs)
+```
+
+**Login/Session issues:**
+- Ensure your proxy forwards `X-Forwarded-Proto` header
+- Check that cookies are set with `Secure` flag when using HTTPS
+
+**Mixed content warnings:**
+- Verify `APP_URL` starts with `https://`
+- Clear browser cache and Laravel cache:
+  ```bash
+  docker compose -f docker-compose.proxy.yml exec app php artisan optimize:clear
+  ```
+
+---
+
 ## Security Checklist
 
 - [ ] Strong passwords for DB and Redis (auto-generated above)
-- [ ] DOMAIN_NAME configured (auto SSL)
+- [ ] DOMAIN_NAME configured (auto SSL) OR reverse proxy with SSL
 - [ ] APP_DEBUG=false
-- [ ] Firewall configured (only 80/443 open)
+- [ ] Firewall configured (only 80/443 open, or proxy port)
+- [ ] TRUSTED_PROXIES limited to actual proxy IPs (production)
 - [ ] Regular backups configured
 - [ ] 2FA enabled for all users
 - [ ] Direct IP access blocked (optional)
