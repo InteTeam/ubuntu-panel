@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Check, Copy } from 'lucide-react';
+import { copyToClipboard } from '@/lib/password-generator';
 
 interface InstallCommandBlockProps {
     command: string;
@@ -10,9 +11,11 @@ export function InstallCommandBlock({ command }: InstallCommandBlockProps) {
     const [copied, setCopied] = useState(false);
 
     const handleCopy = async () => {
-        await navigator.clipboard.writeText(command);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
+        const success = await copyToClipboard(command);
+        if (success) {
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        }
     };
 
     return (
