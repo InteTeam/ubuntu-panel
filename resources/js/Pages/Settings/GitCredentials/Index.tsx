@@ -141,14 +141,14 @@ export default function Index({ credentials }: Props) {
 
             <ConfirmationDialog
                 open={!!deleteCredential}
-                onOpenChange={(open) => !open && setDeleteCredential(null)}
+                onClose={() => setDeleteCredential(null)}
                 title="Delete Git Credential"
                 description={
                     deleteCredential?.apps_count && deleteCredential.apps_count > 0
                         ? `This credential is used by ${deleteCredential.apps_count} app(s). They will be set to use public repository access. Are you sure you want to delete "${deleteCredential?.name}"?`
                         : `Are you sure you want to delete "${deleteCredential?.name}"? This action cannot be undone.`
                 }
-                confirmLabel={isDeleting ? 'Deleting...' : 'Delete'}
+                confirmText={isDeleting ? 'Deleting...' : 'Delete'}
                 onConfirm={handleDelete}
                 variant="destructive"
             />
