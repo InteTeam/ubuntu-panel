@@ -1,6 +1,6 @@
 # UPanel Agent Feature
 
-**Status:** Planning
+**Status:** Implemented
 **Priority:** Critical
 **Phase:** 2
 
@@ -9,6 +9,22 @@
 ## Overview
 
 Lightweight Go-based agent that runs on managed servers, sending heartbeats and metrics to the panel. The agent runs as a Docker container and communicates outbound-only to the panel.
+
+### Quick Start
+
+1. Add a server in UPanel (Servers → Add Server)
+2. Copy the install command shown on the server page
+3. SSH into your VPS and run the install command
+4. The server status will change to "Online" once the agent connects
+
+### Agent Image
+
+The agent is published to GitHub Container Registry:
+```
+ghcr.io/inteteam/upanel-agent:latest
+```
+
+The image must be **public** for managed servers to pull it without authentication.
 
 ---
 
@@ -23,15 +39,15 @@ Lightweight Go-based agent that runs on managed servers, sending heartbeats and 
 
 ## Acceptance Criteria
 
-- [ ] Agent sends heartbeat every 60 seconds
-- [ ] Heartbeat includes CPU, RAM, disk metrics
-- [ ] Heartbeat includes Docker container list with status
-- [ ] Panel API receives and stores heartbeats
-- [ ] Server status updates to "online" after first heartbeat
+- [x] Agent sends heartbeat every 60 seconds
+- [x] Heartbeat includes CPU, RAM, disk metrics
+- [x] Heartbeat includes Docker container list with status
+- [x] Panel API receives and stores heartbeats
+- [x] Server status updates to "online" after first heartbeat
 - [ ] Server status changes to "offline" after 5 minutes without heartbeat
-- [ ] Agent exposes /health endpoint for local checks
-- [ ] Agent image published to GitHub Container Registry
-- [ ] Install script successfully pulls and runs agent
+- [x] Agent exposes /health endpoint for local checks
+- [x] Agent image published to GitHub Container Registry
+- [x] Install script successfully pulls and runs agent
 
 ---
 
@@ -230,13 +246,58 @@ Lightweight Go-based agent that runs on managed servers, sending heartbeats and 
 
 ---
 
-## Open Questions
+## Troubleshooting
+
+### Port Already in Use
+
+If the default port 8443 is already in use:
+
+```bash
+cd /opt/upanel
+docker compose down
+sed -i 's/8443:8443/8901:8443/' docker-compose.yml
+docker compose up -d
+```
+
+Also update the server's agent port in the UPanel UI.
+
+### 401 Unauthorized Errors
+
+The agent token doesn't match what's in the database. Get the token:
+```bash
+cat /opt/upanel/docker-compose.yml | grep AGENT_TOKEN
+```
+
+Update the database (on panel server):
+```bash
+docker compose exec app php artisan tinker --execute="App\Models\Server::where('name', 'SERVER_NAME')->first()->update(['agent_token' => hash('sha256', 'YOUR_TOKEN')]);"
+```
+
+### Image Pull Denied
+
+The agent image at ghcr.io must be set to **Public**:
+1. Go to: https://github.com/orgs/InteTeam/packages/container/upanel-agent/settings
+2. Change visibility to Public
+
+### Docker Socket Permission Denied
+
+The agent runs as root by default to access the Docker socket. If you see permission errors, ensure the docker-compose.yml has:
+```yaml
+services:
+  agent:
+    user: root
+    ...
+```
+
+---
+
+## Resolved Questions
 
 1. Should we use GHCR or Docker Hub?
-   - **Recommendation:** GHCR (free, integrated with GitHub)
+   - **Decision:** GHCR (free, integrated with GitHub)
 
 2. Should agent support self-update?
-   - **Recommendation:** Defer to v2, manual update via SSH for now
+   - **Decision:** Defer to v2, manual update via SSH for now
 
 3. What about ARM servers?
-   - **Recommendation:** Build multi-arch image (amd64 + arm64)
+   - **Decision:** Build multi-arch image (amd64 + arm64) - implemented in CI

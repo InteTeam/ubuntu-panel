@@ -69,6 +69,7 @@ cat > docker-compose.yml << EOF
 services:
   agent:
     image: $AGENT_IMAGE
+    user: root
     restart: unless-stopped
     ports:
       - "127.0.0.1:$AGENT_PORT:8443"

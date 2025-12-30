@@ -79,7 +79,9 @@ Click **"Servers"** in the sidebar, then click **"+ Add Server"**
 | **Host** | IP address or domain of your VPS | `203.0.113.50` or `vps.example.com` |
 | **SSH Port** | SSH port (usually 22) | `22` |
 | **SSH Username** | User for SSH connections | `upanel` (default) |
-| **Agent Port** | Port for UPanel agent | `8443` (default) |
+| **Agent Port** | Port for UPanel agent | `8443` (default, change if port is in use) |
+
+> **Tip**: If port 8443 is already in use on your VPS (e.g., by another service), choose a different port like `8901`.
 
 ### Step 3: Create Server
 
@@ -354,17 +356,70 @@ You can also trigger backups manually:
 
 **Symptoms**: Status stays "Pending" or "Offline"
 
-**Check**:
+**Step 1: Check if agent is running**
 ```bash
-# On your VPS, check if agent is running
-docker ps | grep upanel
+# On your VPS
+cd /opt/upanel
+docker compose ps
+```
 
-# Check agent logs
-docker logs upanel-agent
+**Step 2: Check agent logs**
+```bash
+docker compose logs --tail=50
+```
 
-# Verify port is open
+**Common issues and fixes:**
+
+#### Port Already in Use
+```
+Error: Bind for 0.0.0.0:8443 failed: port is already allocated
+```
+**Fix**: Change the agent port in `/opt/upanel/docker-compose.yml`:
+```bash
+# Stop the agent
+docker compose down
+
+# Change port (e.g., from 8443 to 8901)
+sed -i 's/8443:8443/8901:8443/' docker-compose.yml
+
+# Start again
+docker compose up -d
+```
+Also update the server's agent port in UPanel (edit server settings).
+
+#### 401 Unauthorized Errors
+```
+Heartbeat attempt 1/3 failed: unexpected status 401: {"error":"Unauthorized"}
+```
+**Fix**: The agent token doesn't match. Get the token from the agent:
+```bash
+cat /opt/upanel/docker-compose.yml | grep AGENT_TOKEN
+```
+Then update the panel database (on panel server):
+```bash
+cd /path/to/ubuntu-panel
+docker compose exec app php artisan tinker --execute="App\Models\Server::where('name', 'YOUR_SERVER_NAME')->first()->update(['agent_token' => hash('sha256', 'YOUR_TOKEN_HERE')]);"
+```
+
+#### Docker Socket Permission Denied
+```
+Warning: failed to collect containers: permission denied while trying to connect to Docker daemon socket
+```
+**Fix**: Edit `/opt/upanel/docker-compose.yml` and add `user: root`:
+```yaml
+services:
+  agent:
+    image: ghcr.io/inteteam/upanel-agent:latest
+    user: root
+    restart: unless-stopped
+    ...
+```
+Then restart: `docker compose down && docker compose up -d`
+
+#### Verify Firewall
+```bash
 sudo ufw status
-sudo ufw allow 8443
+sudo ufw allow 8443  # or your agent port
 ```
 
 ### Deployment Fails
