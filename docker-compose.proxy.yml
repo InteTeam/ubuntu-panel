@@ -23,6 +23,7 @@ services:
     volumes:
       - ./storage:/var/www/storage
       - ./.env:/var/www/.env
+      - ./public:/var/www/public
     networks:
       - upanel
     depends_on:
