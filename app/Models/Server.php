@@ -31,6 +31,7 @@ final class Server extends Model
         'disk_gb',
         'hardened_at',
         'security_score',
+        'containers',
     ];
 
     protected $hidden = [
@@ -50,6 +51,7 @@ final class Server extends Model
             'security_score' => 'integer',
             'last_seen_at' => 'datetime',
             'hardened_at' => 'datetime',
+            'containers' => 'array',
         ];
     }
 

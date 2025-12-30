@@ -6,8 +6,10 @@ set -e
 
 PANEL_URL="{{ $panelUrl }}"
 TOKEN="{{ $token }}"
+SERVER_ID="{{ $serverId }}"
 AGENT_PORT="{{ $agentPort }}"
 SSH_USER="upanel"
+AGENT_IMAGE="{{ config('upanel.agent_image', 'ghcr.io/inteteam/upanel-agent:latest') }}"
 
 echo "==================================="
 echo "  UPanel Server Installation"
@@ -66,16 +68,22 @@ AGENT_TOKEN=$(openssl rand -hex 32)
 cat > docker-compose.yml << EOF
 services:
   agent:
-    image: ghcr.io/upanel/agent:latest
+    image: $AGENT_IMAGE
     restart: unless-stopped
     ports:
       - "127.0.0.1:$AGENT_PORT:8443"
     environment:
       PANEL_URL: $PANEL_URL
       AGENT_TOKEN: $AGENT_TOKEN
+      SERVER_ID: $SERVER_ID
+      HEALTH_PORT: "8443"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - /:/host:ro
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8443/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
 EOF
 
 chown -R $SSH_USER:$SSH_USER /opt/upanel

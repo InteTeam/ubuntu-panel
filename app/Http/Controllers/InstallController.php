@@ -25,6 +25,7 @@ final class InstallController extends Controller
 
         $script = view('scripts.install', [
             'token' => $token,
+            'serverId' => $server->id,
             'panelUrl' => config('app.url'),
             'publicKey' => $server->ssh_public_key,
             'agentPort' => $server->agent_port,
